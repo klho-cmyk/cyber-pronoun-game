@@ -155,11 +155,30 @@
   .finalpct{font-size:1.2rem;color:var(--dim);margin-bottom:20px;}
   #finalMsg{font-size:.98rem;line-height:1.9;color:#8fc7f5;margin-bottom:24px;}
 
-  @media(max-width:520px){
-    .card{padding:20px 16px;}
-    .qtext{font-size:1.08rem;}
-    #startScreen h1{font-size:1.45rem;}
+  /* Summary Notes 錯題溫習區 */
+  .summary-notes{
+    text-align:left;
+    background:#070d17;
+    border:1px solid #17314f;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:24px;
+    max-height:400px;
+    overflow-y:auto;
   }
+  .summary-notes h3{color:#7fc4ff;font-size:1.15rem;margin-bottom:14px;border-bottom:1px solid #17314f;padding-bottom:8px;letter-spacing:1px;}
+  .note-item{
+    background:#0a1524;
+    border-left:3px solid #c9415e;
+    padding:12px 16px;
+    border-radius:0 8px 8px 0;
+    margin-bottom:12px;
+    font-size:.92rem;
+    line-height:1.7;
+    color:#b9dcff;
+  }
+  .note-item .ntag{display:block;color:#ff9aae;font-size:.8rem;margin-bottom:6px;letter-spacing:0.5px;}
+  .note-item b{color:#fff;}
 </style>
 </head>
 <body>
@@ -176,8 +195,8 @@
       <b>物主代詞</b> Possessive Pronoun：mine / yours / his / hers / ours / theirs —— 後面<b>不可</b>加名詞
       <br><br>
       ⏱ 彈性計時：短句 15 秒、中短句 18 秒、中長句 20 秒、轉述題 25 秒<br>
-      📝 共 <b>40 題</b>｜答案位置平均分佈｜答錯有中文題解<br>
-      最後 10 題係 <b>Reported Speech 轉述引語</b> 的代詞轉換
+      📝 共 <b>50 題</b>｜答案平均分佈｜答錯有中文題解及<b>最後錯題總結</b><br>
+      包含 20 題 <b>Reported Speech 轉述引語</b> 的代詞轉換
     </div>
     <button class="bigbtn" onclick="startGame()">開始挑戰 ▶</button>
   </section>
@@ -185,7 +204,7 @@
   <!-- ================= 遊戲畫面 ================= -->
   <section id="gameScreen" class="card hidden">
     <div class="topbar">
-      <span id="progress">第 1 / 40 題</span>
+      <span id="progress">第 1 / 50 題</span>
       <span class="score" id="score">得分：0</span>
     </div>
 
@@ -208,9 +227,17 @@
   <!-- ================= 結束畫面 ================= -->
   <section id="endScreen" class="card hidden">
     <h2>挑戰完成！</h2>
-    <div class="finalscore" id="finalScore">0 / 40</div>
+    <div class="finalscore" id="finalScore">0 / 50</div>
     <div class="finalpct" id="finalPct">0%</div>
+    
     <div id="finalMsg"></div>
+
+    <!-- 錯題總結區 -->
+    <div id="summaryNotes" class="summary-notes hidden">
+      <h3>📝 錯題重點溫習 (Summary Notes)</h3>
+      <div id="notesList"></div>
+    </div>
+
     <button class="bigbtn" onclick="startGame()">再玩一次 ↻</button>
   </section>
 
@@ -218,270 +245,72 @@
 
 <script>
 /* ============================================================
-   題庫：40 題
-   答案位置平均分佈：A × 10、B × 10、C × 10、D × 10
-   前 30 題 = 四種代詞分辨（句子長度由短到長）
-   後 10 題 = Reported Speech 代詞轉換
+   題庫：50 題
+   答案位置平均分佈：A × 13、B × 13、C × 12、D × 12
+   前 30 題 = 四種代詞分辨
+   第 31–50 題 = Reported Speech 代詞轉換 (共 20 題)
    ============================================================ */
 const QUESTIONS = [
 
   /* ---------- 第 1–10 題：短句（15 秒） ---------- */
-  {
-    text: "___ should change your password every month.",
-    options: ["You","Your","Yours","Yourself"], answer: 0,
-    tag: "主格代詞 Subject Pronoun",
-    explain: "空格在句子開頭做主語（subject），所以要用主格代詞 <b>You</b>。<br>• Your 是物主形容詞，後面一定要有名詞（your password）。<br>• Yours 是物主代詞，後面不可有名詞。<br>• Yourself 是反身代詞，不合句意。"
-  },
-  {
-    text: "Please send ___ the security code by email.",
-    options: ["I","me","my","mine"], answer: 1,
-    tag: "賓格代詞 Object Pronoun",
-    explain: "send 是動詞，後面要接受詞（賓語），所以用賓格代詞 <b>me</b>。<br>• I 是主格，只能做主語。<br>• my 是物主形容詞（my code）。<br>• mine 是物主代詞（The code is mine.）。"
-  },
-  {
-    text: "Mia checks ___ email every morning before school.",
-    options: ["she","hers","her","herself"], answer: 2,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>email</b>，所以要用物主形容詞 <b>her</b>（她的）。<br>• hers 是物主代詞，後面不可以加名詞（This email is hers.）。<br>• she 是主格，herself 是反身代詞。"
-  },
-  {
-    text: "The website asks ___ to create a new password.",
-    options: ["we","ours","our","us"], answer: 3,
-    tag: "賓格代詞 Object Pronoun",
-    explain: "ask 後面要接受詞，所以用賓格代詞 <b>us</b>。<br>• we 是主格（We create a password.）。<br>• our 是物主形容詞（our password）。<br>• ours 是物主代詞（The password is ours.）。"
-  },
-  {
-    text: "A hacker tried to steal ___ account last night.",
-    options: ["his","him","he","himself"], answer: 0,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>account</b>，所以用物主形容詞 <b>his</b>（他的）。<br>• he 是主格，him 是賓格（steal him = 偷走他本人，意思不同）。<br>• himself 是反身代詞。"
-  },
-  {
-    text: "___ should never click on strange links in emails.",
-    options: ["Us","We","Our","Ours"], answer: 1,
-    tag: "主格代詞 Subject Pronoun",
-    explain: "空格是整句的主語，所以用主格代詞 <b>We</b>。<br>• Us 是賓格，不能做主語。<br>• Our 是物主形容詞（our emails）。<br>• Ours 是物主代詞。"
-  },
-  {
-    text: "The students keep ___ files in a safe place online.",
-    options: ["they","them","their","theirs"], answer: 2,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>files</b>，所以用物主形容詞 <b>their</b>（他們的）。<br>• theirs 後面不可以加名詞。<br>• them 是賓格（keep them = 保存它們）。"
-  },
-  {
-    text: "This phone is ___ , so please do not lose it.",
-    options: ["I","me","my","mine"], answer: 3,
-    tag: "物主代詞 Possessive Pronoun",
-    explain: "空格後面<b>沒有名詞</b>，所以要用物主代詞 <b>mine</b>（我的東西）。<br>• my 後面一定要有名詞（my phone）。<br>• me 是賓格代詞。"
-  },
-  {
-    text: "___ are the new passwords, so keep them safe.",
-    options: ["They","Them","Their","Theirs"], answer: 0,
-    tag: "主格代詞 Subject Pronoun",
-    explain: "空格是句子主語，所以用主格代詞 <b>They</b>。<br>• Them 是賓格，不能做主語。<br>• Their 是物主形容詞，Theirs 是物主代詞。"
-  },
-  {
-    text: "___ password is very strong, so nobody can guess it.",
-    options: ["She","Her","Hers","Herself"], answer: 1,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>password</b>，所以用物主形容詞 <b>Her</b>（她的）。<br>• Hers 後面不可以加名詞（The password is hers.）。<br>• She 是主格，Herself 是反身代詞。"
-  },
+  { text: "___ should change your password every month.", options: ["You","Your","Yours","Yourself"], answer: 0, tag: "主格代詞 Subject Pronoun", explain: "空格在句子開頭做主語（subject），所以要用主格代詞 <b>You</b>。<br>• Your 是物主形容詞，後面一定要有名詞（your password）。<br>• Yours 是物主代詞，後面不可有名詞。<br>• Yourself 是反身代詞，不合句意。" },
+  { text: "Please send ___ the security code by email.", options: ["I","me","my","mine"], answer: 1, tag: "賓格代詞 Object Pronoun", explain: "send 是動詞，後面要接受詞（賓語），所以用賓格代詞 <b>me</b>。<br>• I 是主格，只能做主語。<br>• my 是物主形容詞（my code）。<br>• mine 是物主代詞（The code is mine.）。" },
+  { text: "Mia checks ___ email every morning before school.", options: ["she","hers","her","herself"], answer: 2, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>email</b>，所以要用物主形容詞 <b>her</b>（她的）。<br>• hers 是物主代詞，後面不可以加名詞（This email is hers.）。<br>• she 是主格，herself 是反身代詞。" },
+  { text: "The website asks ___ to create a new password.", options: ["we","ours","our","us"], answer: 3, tag: "賓格代詞 Object Pronoun", explain: "ask 後面要接受詞，所以用賓格代詞 <b>us</b>。<br>• we 是主格（We create a password.）。<br>• our 是物主形容詞（our password）。<br>• ours 是物主代詞（The password is ours.）。" },
+  { text: "A hacker tried to steal ___ account last night.", options: ["his","him","he","himself"], answer: 0, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>account</b>，所以用物主形容詞 <b>his</b>（他的）。<br>• he 是主格，him 是賓格。<br>• himself 是反身代詞。" },
+  { text: "___ should never click on strange links in emails.", options: ["Us","We","Our","Ours"], answer: 1, tag: "主格代詞 Subject Pronoun", explain: "空格是整句的主語，所以用主格代詞 <b>We</b>。<br>• Us 是賓格，不能做主語。<br>• Our 是物主形容詞（our emails）。<br>• Ours 是物主代詞。" },
+  { text: "The students keep ___ files in a safe place online.", options: ["they","them","their","theirs"], answer: 2, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>files</b>，所以用物主形容詞 <b>their</b>（他們的）。<br>• theirs 後面不可以加名詞。<br>• them 是賓格（keep them = 保存它們）。" },
+  { text: "This phone is ___ , so please do not lose it.", options: ["I","me","my","mine"], answer: 3, tag: "物主代詞 Possessive Pronoun", explain: "空格後面<b>沒有名詞</b>，所以要用物主代詞 <b>mine</b>（我的東西）。<br>• my 後面一定要有名詞（my phone）。<br>• me 是賓格代詞。" },
+  { text: "___ are the new passwords, so keep them safe.", options: ["They","Them","Their","Theirs"], answer: 0, tag: "主格代詞 Subject Pronoun", explain: "空格是句子主語，所以用主格代詞 <b>They</b>。<br>• Them 是賓格，不能做主語。<br>• Their 是物主形容詞，Theirs 是物主代詞。" },
+  { text: "___ password is very strong, so nobody can guess it.", options: ["She","Her","Hers","Herself"], answer: 1, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>password</b>，所以用物主形容詞 <b>Her</b>（她的）。<br>• Hers 後面不可以加名詞（The password is hers.）。<br>• She 是主格，Herself 是反身代詞。" },
 
   /* ---------- 第 11–20 題：中短句（18 秒） ---------- */
-  {
-    text: "The warning told ___ to change the password immediately.",
-    options: ["we","our","us","ours"], answer: 2,
-    tag: "賓格代詞 Object Pronoun",
-    explain: "tell 後面要接受詞（被通知的人），用賓格代詞 <b>us</b>。<br>• 口訣：動詞後面 → 用賓格。"
-  },
-  {
-    text: "Please do not share ___ with anyone on the internet.",
-    options: ["yourself","your","you","yours"], answer: 3,
-    tag: "物主代詞 Possessive Pronoun",
-    explain: "空格後面<b>沒有名詞</b>，所以用物主代詞 <b>yours</b>（你的東西）。<br>• your 後面一定要有名詞（your password）。<br>• you 是主格／賓格代詞。"
-  },
-  {
-    text: "The team updated ___ software before the hacker attacked them.",
-    options: ["their","theirs","they","them"], answer: 0,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>software</b>，所以用物主形容詞 <b>their</b>。<br>• theirs 後面不可以加名詞。<br>• them 是賓格，句子最後已經用了 them。"
-  },
-  {
-    text: "The password manager remembers all ___ passwords, so you can relax.",
-    options: ["you","your","yours","yourself"], answer: 1,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>passwords</b>，所以用物主形容詞 <b>your</b>。<br>• yours 後面不可以加名詞。"
-  },
-  {
-    text: "This old laptop is ___ , but it still works very well.",
-    options: ["I","me","mine","my"], answer: 2,
-    tag: "物主代詞 Possessive Pronoun",
-    explain: "空格後面<b>沒有名詞</b>，所以用物主代詞 <b>mine</b>。<br>• my 必須有名詞在後面（my laptop）。"
-  },
-  {
-    text: "The app asked ___ to verify the account with a code.",
-    options: ["we","ours","our","us"], answer: 3,
-    tag: "賓格代詞 Object Pronoun",
-    explain: "ask 後面要接受詞，所以用賓格代詞 <b>us</b>。<br>• 主格 we 只可以做主語。"
-  },
-  {
-    text: "Their system is safe, but ___ still has a few problems.",
-    options: ["ours","us","our","we"], answer: 0,
-    tag: "物主代詞 Possessive Pronoun",
-    explain: "空格後面<b>沒有名詞</b>（= our system），所以用物主代詞 <b>ours</b>。<br>• our 後面一定要有名詞（our system）。"
-  },
-  {
-    text: "The email looked very real, so ___ clicked the dangerous link.",
-    options: ["her","she","hers","herself"], answer: 1,
-    tag: "主格代詞 Subject Pronoun",
-    explain: "空格是 so 後面從句的主語，所以用主格代詞 <b>she</b>。<br>• her 是賓格／物主形容詞，不能做主語。"
-  },
-  {
-    text: "A very good password protects ___ , so make it long and complex.",
-    options: ["yours","your","you","yourself"], answer: 2,
-    tag: "賓格代詞 Object Pronoun",
-    explain: "protect 後面要接受詞，所以用賓格代詞 <b>you</b>。<br>• yourself 是反身代詞（protect yourself 也通，但本題選項中 you 才是賓格代詞）。<br>• your 是物主形容詞，後面要加名詞。"
-  },
-  {
-    text: "The manager emailed ___ security report to all the workers yesterday.",
-    options: ["she","herself","hers","her"], answer: 3,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>report</b>，所以用物主形容詞 <b>her</b>。<br>• hers 後面不可以加名詞。"
-  },
+  { text: "The warning told ___ to change the password immediately.", options: ["we","our","us","ours"], answer: 2, tag: "賓格代詞 Object Pronoun", explain: "tell 後面要接受詞（被通知的人），用賓格代詞 <b>us</b>。<br>• 口訣：動詞後面 → 用賓格。" },
+  { text: "Please do not share ___ with anyone on the internet.", options: ["yourself","your","you","yours"], answer: 3, tag: "物主代詞 Possessive Pronoun", explain: "空格後面<b>沒有名詞</b>，所以用物主代詞 <b>yours</b>（你的東西）。<br>• your 後面一定要有名詞（your password）。<br>• you 是主格／賓格代詞。" },
+  { text: "The team updated ___ software before the hacker attacked them.", options: ["their","theirs","they","them"], answer: 0, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>software</b>，所以用物主形容詞 <b>their</b>。<br>• theirs 後面不可以加名詞。<br>• them 是賓格，句子最後已經用了 them。" },
+  { text: "The password manager remembers all ___ passwords, so you can relax.", options: ["you","your","yours","yourself"], answer: 1, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>passwords</b>，所以用物主形容詞 <b>your</b>。<br>• yours 後面不可以加名詞。" },
+  { text: "This old laptop is ___ , but it still works very well.", options: ["I","me","mine","my"], answer: 2, tag: "物主代詞 Possessive Pronoun", explain: "空格後面<b>沒有名詞</b>，所以用物主代詞 <b>mine</b>。<br>• my 必須有名詞在後面（my laptop）。" },
+  { text: "The app asked ___ to verify the account with a code.", options: ["we","ours","our","us"], answer: 3, tag: "賓格代詞 Object Pronoun", explain: "ask 後面要接受詞，所以用賓格代詞 <b>us</b>。<br>• 主格 we 只可以做主語。" },
+  { text: "Their system is safe, but ___ still has a few problems.", options: ["ours","us","our","we"], answer: 0, tag: "物主代詞 Possessive Pronoun", explain: "空格後面<b>沒有名詞</b>（= our system），所以用物主代詞 <b>ours</b>。<br>• our 後面一定要有名詞（our system）。" },
+  { text: "The email looked very real, so ___ clicked the dangerous link.", options: ["her","she","hers","herself"], answer: 1, tag: "主格代詞 Subject Pronoun", explain: "空格是 so 後面從句的主語，所以用主格代詞 <b>she</b>。<br>• her 是賓格／物主形容詞，不能做主語。" },
+  { text: "A very good password protects ___ , so make it long and complex.", options: ["yours","your","you","yourself"], answer: 2, tag: "賓格代詞 Object Pronoun", explain: "protect 後面要接受詞，所以用賓格代詞 <b>you</b>。<br>• your 是物主形容詞，後面要加名詞。" },
+  { text: "The manager emailed ___ security report to all the workers yesterday.", options: ["she","herself","hers","her"], answer: 3, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>report</b>，所以用物主形容詞 <b>her</b>。<br>• hers 後面不可以加名詞。" },
 
   /* ---------- 第 21–30 題：中長句（20 秒） ---------- */
-  {
-    text: "We changed all ___ passwords after the warning about hackers.",
-    options: ["our","we","ours","us"], answer: 0,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>passwords</b>，所以用物主形容詞 <b>our</b>。<br>• ours 後面不可以加名詞。"
-  },
-  {
-    text: "Please check ___ email carefully before you open any attachment.",
-    options: ["you","your","yours","yourself"], answer: 1,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>email</b>，所以用物主形容詞 <b>your</b>。<br>• yours 後面不可以加名詞。"
-  },
-  {
-    text: "The new software protects the network, and ___ is easy to use.",
-    options: ["itself","its","it","they"], answer: 2,
-    tag: "主格代詞 Subject Pronoun",
-    explain: "空格是 and 後面從句的主語，指 software，所以用主格代詞 <b>it</b>。<br>• its 是物主形容詞，後面要加名詞（its settings）。"
-  },
-  {
-    text: "The hacker sent ___ a message that looked like a bank email.",
-    options: ["we","ours","our","us"], answer: 3,
-    tag: "賓格代詞 Object Pronoun",
-    explain: "send 後面要接受詞（收到訊息的人），所以用賓格代詞 <b>us</b>。<br>• our 是物主形容詞（our message）。"
-  },
-  {
-    text: "That account is ___ , so only you should know the password.",
-    options: ["yours","your","you","yourself"], answer: 0,
-    tag: "物主代詞 Possessive Pronoun",
-    explain: "空格後面<b>沒有名詞</b>，所以用物主代詞 <b>yours</b>（你的帳戶）。<br>• your 後面一定要有名詞（your account）。"
-  },
-  {
-    text: "___ should update the software often because hackers look for weak points.",
-    options: ["Us","We","Our","Ours"], answer: 1,
-    tag: "主格代詞 Subject Pronoun",
-    explain: "空格是整句的主語，所以用主格代詞 <b>We</b>。<br>• Us 是賓格，不可以做主語。"
-  },
-  {
-    text: "The message asked ___ for the password, which is a clear sign of phishing.",
-    options: ["my","mine","me","I"], answer: 2,
-    tag: "賓格代詞 Object Pronoun",
-    explain: "ask 後面要接受詞（被問的人），所以用賓格代詞 <b>me</b>。<br>• my 是物主形容詞，I 是主格。"
-  },
-  {
-    text: "The bank warned all ___ customers about a dangerous new scam online.",
-    options: ["they","them","theirs","their"], answer: 3,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>customers</b>，所以用物主形容詞 <b>their</b>。<br>• theirs 後面不可以加名詞。"
-  },
-  {
-    text: "A good firewall keeps ___ safe, but you still need to be careful online.",
-    options: ["us","we","ours","our"], answer: 0,
-    tag: "賓格代詞 Object Pronoun",
-    explain: "keep 後面要接受詞，所以用賓格代詞 <b>us</b>。<br>• our 是物主形容詞（our data）。"
-  },
-  {
-    text: "The technician fixed the laptop and updated ___ software carefully.",
-    options: ["itself","its","they","it"], answer: 1,
-    tag: "物主形容詞 Possessive Adjective",
-    explain: "空格後面有名詞 <b>software</b>，所以用物主形容詞 <b>its</b>（它的）。<br>• it 是主格／賓格代詞，後面不可以直接加名詞。"
-  },
+  { text: "We changed all ___ passwords after the warning about hackers.", options: ["our","we","ours","us"], answer: 0, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>passwords</b>，所以用物主形容詞 <b>our</b>。<br>• ours 後面不可以加名詞。" },
+  { text: "Please check ___ email carefully before you open any attachment.", options: ["you","your","yours","yourself"], answer: 1, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>email</b>，所以用物主形容詞 <b>your</b>。<br>• yours 後面不可以加名詞。" },
+  { text: "The new software protects the network, and ___ is easy to use.", options: ["itself","its","it","they"], answer: 2, tag: "主格代詞 Subject Pronoun", explain: "空格是 and 後面從句的主語，指 software，所以用主格代詞 <b>it</b>。<br>• its 是物主形容詞，後面要加名詞（its settings）。" },
+  { text: "The hacker sent ___ a message that looked like a bank email.", options: ["we","ours","our","us"], answer: 3, tag: "賓格代詞 Object Pronoun", explain: "send 後面要接受詞（收到訊息的人），所以用賓格代詞 <b>us</b>。<br>• our 是物主形容詞（our message）。" },
+  { text: "That account is ___ , so only you should know the password.", options: ["yours","your","you","yourself"], answer: 0, tag: "物主代詞 Possessive Pronoun", explain: "空格後面<b>沒有名詞</b>，所以用物主代詞 <b>yours</b>（你的帳戶）。<br>• your 後面一定要有名詞（your account）。" },
+  { text: "___ should update the software often because hackers look for weak points.", options: ["Us","We","Our","Ours"], answer: 1, tag: "主格代詞 Subject Pronoun", explain: "空格是整句的主語，所以用主格代詞 <b>We</b>。<br>• Us 是賓格，不可以做主語。" },
+  { text: "The message asked ___ for the password, which is a clear sign of phishing.", options: ["my","mine","me","I"], answer: 2, tag: "賓格代詞 Object Pronoun", explain: "ask 後面要接受詞（被問的人），所以用賓格代詞 <b>me</b>。<br>• my 是物主形容詞，I 是主格。" },
+  { text: "The bank warned all ___ customers about a dangerous new scam online.", options: ["they","them","theirs","their"], answer: 3, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>customers</b>，所以用物主形容詞 <b>their</b>。<br>• theirs 後面不可以加名詞。" },
+  { text: "A good firewall keeps ___ safe, but you still need to be careful online.", options: ["us","we","ours","our"], answer: 0, tag: "賓格代詞 Object Pronoun", explain: "keep 後面要接受詞，所以用賓格代詞 <b>us</b>。<br>• our 是物主形容詞（our data）。" },
+  { text: "The technician fixed the laptop and updated ___ software carefully.", options: ["itself","its","they","it"], answer: 1, tag: "物主形容詞 Possessive Adjective", explain: "空格後面有名詞 <b>software</b>，所以用物主形容詞 <b>its</b>（它的）。<br>• it 是主格／賓格代詞。" },
 
-  /* ---------- 第 31–40 題：Reported Speech 轉述引語（25 秒） ---------- */
-  {
-    direct: 'Mia said, "I check my email every day."',
-    text: "Mia said that ___ checked her email every day.",
-    options: ["her","hers","she","I"], answer: 2,
-    tag: "轉述句 · 主格代詞 Subject Pronoun",
-    explain: "直接引語中的 <b>I</b> 是指 Mia 自己，轉述時要變成 <b>she</b>（第三人稱）。<br>而且空格是 that 從句的主語，所以必須用<b>主格代詞</b>。<br>• her 是賓格／物主形容詞，hers 是物主代詞，都不可以做主語。"
-  },
-  {
-    direct: '"The hacker stole my account," Amy said.',
-    text: "Amy said that the hacker stole ___ account.",
-    options: ["hers","she","my","her"], answer: 3,
-    tag: "轉述句 · 物主形容詞 Possessive Adjective",
-    explain: "直接引語中的 <b>my</b> 是指 Amy 的帳戶，轉述時要變成 <b>her</b>。<br>因為後面有名詞 account，所以這是<b>物主形容詞</b>。<br>• hers 是物主代詞，後面不可以加名詞。"
-  },
-  {
-    direct: '"We need stronger passwords," the students said.',
-    text: "The students said that ___ needed stronger passwords.",
-    options: ["they","their","them","we"], answer: 0,
-    tag: "轉述句 · 主格代詞 Subject Pronoun",
-    explain: "直接引語中的 <b>We</b> 是指學生們，轉述時要變成 <b>they</b>。<br>空格是 that 從句的主語，所以用<b>主格代詞</b>。<br>• them 是賓格，their 是物主形容詞。"
-  },
-  {
-    direct: '"I will send you the file," Ben said to me.',
-    text: "Ben said that he would send ___ the file.",
-    options: ["I","me","you","my"], answer: 1,
-    tag: "轉述句 · 賓格代詞 Object Pronoun",
-    explain: "Ben 是對「我」說話，直接引語中的 <b>you</b> 指聽話的人（我），轉述時要變成 <b>me</b>。<br>send 後面要接受詞，所以用<b>賓格代詞</b>。<br>• I 是主格，my 是物主形容詞。"
-  },
-  {
-    direct: '"Our network is safe," the manager said.',
-    text: "The manager said that ___ network was safe.",
-    options: ["they","them","their","our"], answer: 2,
-    tag: "轉述句 · 物主形容詞 Possessive Adjective",
-    explain: "直接引語中的 <b>Our</b> 是指經理團隊的網絡，轉述時要變成 <b>their</b>。<br>後面有名詞 network，所以是<b>物主形容詞</b>。<br>• they 是主格，them 是賓格。"
-  },
-  {
-    direct: '"You should update your software," she told me.',
-    text: "She told me that ___ should update my software.",
-    options: ["me","my","you","I"], answer: 3,
-    tag: "轉述句 · 主格代詞 Subject Pronoun",
-    explain: "直接引語中的 <b>you</b> 是指「我」，轉述時要變成 <b>I</b>。<br>空格是 that 從句的主語，所以用<b>主格代詞</b>。<br>• me 是賓格，my 是物主形容詞。"
-  },
-  {
-    direct: '"I lost my phone yesterday," Sam said.',
-    text: "Sam said that he had lost ___ phone the day before.",
-    options: ["his","him","he","my"], answer: 0,
-    tag: "轉述句 · 物主形容詞 Possessive Adjective",
-    explain: "直接引語中的 <b>my</b> 是指 Sam 的手機，轉述時要變成 <b>his</b>。<br>後面有名詞 phone，所以是<b>物主形容詞</b>。<br>• he 是主格，him 是賓格。"
-  },
-  {
-    direct: '"We will protect your data," the company said.',
-    text: "The company said that they would protect ___ data.",
-    options: ["us","our","we","your"], answer: 1,
-    tag: "轉述句 · 物主形容詞 Possessive Adjective",
-    explain: "假設是顧客在轉述：直接引語中的 <b>your</b> 指顧客自己的資料，轉述時要變成 <b>our</b>（我們的）。<br>後面有名詞 data，所以是<b>物主形容詞</b>。<br>• us 是賓格，we 是主格。"
-  },
-  {
-    direct: '"She forgot her password," they said.',
-    text: "They said that ___ had forgotten her password.",
-    options: ["hers","her","she","he"], answer: 2,
-    tag: "轉述句 · 主格代詞 Subject Pronoun",
-    explain: "直接引語中的 <b>She</b> 是第三人稱，轉述時<b>保持不變</b>，仍然是 <b>she</b>。<br>空格是 that 從句的主語，所以用<b>主格代詞</b>。<br>• her 是賓格／物主形容詞，hers 是物主代詞。"
-  },
-  {
-    direct: '"I can help you with the settings," said the technician.',
-    text: "The technician said he could help ___ with the settings.",
-    options: ["my","I","you","me"], answer: 3,
-    tag: "轉述句 · 賓格代詞 Object Pronoun",
-    explain: "技術員是對「我」說話，直接引語中的 <b>you</b> 指聽話的人（我），轉述時要變成 <b>me</b>。<br>help 後面要接受詞，所以用<b>賓格代詞</b>。<br>• I 是主格，my 是物主形容詞。"
-  }
+  /* ---------- 第 31–40 題：Reported Speech（25 秒） ---------- */
+  { direct: 'Mia said, "I check my email every day."', text: "Mia said that ___ checked her email every day.", options: ["her","hers","she","I"], answer: 2, tag: "轉述句 · 主格代詞 Subject Pronoun", explain: "直接引語中的 <b>I</b> 是指 Mia 自己，轉述時要變成 <b>she</b>。<br>而且空格是 that 從句的主語，所以必須用<b>主格代詞</b>。" },
+  { direct: '"The hacker stole my account," Amy said.', text: "Amy said that the hacker stole ___ account.", options: ["hers","she","my","her"], answer: 3, tag: "轉述句 · 物主形容詞 Possessive Adjective", explain: "直接引語中的 <b>my</b> 是指 Amy 的帳戶，轉述時要變成 <b>her</b>。<br>因為後面有名詞 account，所以這是<b>物主形容詞</b>。" },
+  { direct: '"We need stronger passwords," the students said.', text: "The students said that ___ needed stronger passwords.", options: ["they","their","them","we"], answer: 0, tag: "轉述句 · 主格代詞 Subject Pronoun", explain: "直接引語中的 <b>We</b> 是指學生們，轉述時要變成 <b>they</b>。<br>空格是 that 從句的主語，所以用<b>主格代詞</b>。" },
+  { direct: '"I will send you the file," Ben said to me.', text: "Ben said that he would send ___ the file.", options: ["I","me","you","my"], answer: 1, tag: "轉述句 · 賓格代詞 Object Pronoun", explain: "Ben 是對「我」說話，直接引語中的 <b>you</b> 指聽話的人（我），轉述時要變成 <b>me</b>。<br>send 後面要接受詞，所以用<b>賓格代詞</b>。" },
+  { direct: '"Our network is safe," the manager said.', text: "The manager said that ___ network was safe.", options: ["they","them","their","our"], answer: 2, tag: "轉述句 · 物主形容詞 Possessive Adjective", explain: "直接引語中的 <b>Our</b> 是指經理團隊的網絡，轉述時要變成 <b>their</b>。<br>後面有名詞 network，所以是<b>物主形容詞</b>。" },
+  { direct: '"You should update your software," she told me.', text: "She told me that ___ should update my software.", options: ["me","my","you","I"], answer: 3, tag: "轉述句 · 主格代詞 Subject Pronoun", explain: "直接引語中的 <b>you</b> 是指「我」，轉述時要變成 <b>I</b>。<br>空格是 that 從句的主語，所以用<b>主格代詞</b>。" },
+  { direct: '"I lost my phone yesterday," Sam said.', text: "Sam said that he had lost ___ phone the day before.", options: ["his","him","he","my"], answer: 0, tag: "轉述句 · 物主形容詞 Possessive Adjective", explain: "直接引語中的 <b>my</b> 是指 Sam 的手機，轉述時要變成 <b>his</b>。<br>後面有名詞 phone，所以是<b>物主形容詞</b>。" },
+  { direct: '"We will protect your data," the company said.', text: "The company said that they would protect ___ data.", options: ["us","our","we","your"], answer: 1, tag: "轉述句 · 物主形容詞 Possessive Adjective", explain: "假設是顧客在轉述：直接引語中的 <b>your</b> 指顧客自己的資料，轉述時要變成 <b>our</b>（我們的）。<br>後面有名詞 data，所以是<b>物主形容詞</b>。" },
+  { direct: '"She forgot her password," they said.', text: "They said that ___ had forgotten her password.", options: ["hers","her","she","he"], answer: 2, tag: "轉述句 · 主格代詞 Subject Pronoun", explain: "直接引語中的 <b>She</b> 是第三人稱，轉述時<b>保持不變</b>，仍然是 <b>she</b>。<br>空格是 that 從句的主語，所以用<b>主格代詞</b>。" },
+  { direct: '"I can help you with the settings," said the technician.', text: "The technician said he could help ___ with the settings.", options: ["my","I","you","me"], answer: 3, tag: "轉述句 · 賓格代詞 Object Pronoun", explain: "技術員是對「我」說話，直接引語中的 <b>you</b> 指聽話的人（我），轉述時要變成 <b>me</b>。<br>help 後面要接受詞，所以用<b>賓格代詞</b>。" },
+
+  /* ---------- 第 41–50 題：新增 Report Speech（25 秒） ---------- */
+  { direct: '"I will change my password," he said.', text: "He said that he would change ___ password.", options: ["his","him","he","my"], answer: 0, tag: "轉述句 · 物主形容詞 Possessive Adjective", explain: "<b>my</b> 指他自己的密碼，轉述時變成 <b>his</b>。後面有名詞 password，所以用物主形容詞。" },
+  { direct: '"They sent us a virus," the workers said.', text: "The workers said that they had sent ___ a virus.", options: ["we","them","their","us"], answer: 1, tag: "轉述句 · 賓格代詞 Object Pronoun", explain: "直接引語中的 <b>us</b> 是指工人們自己，轉述時要變成 <b>them</b>。send 後面接受詞，用賓格代詞。" },
+  { direct: '"You need to check your emails," the teacher told me.', text: "The teacher told me that ___ needed to check my emails.", options: ["me","my","I","you"], answer: 2, tag: "轉述句 · 主格代詞 Subject Pronoun", explain: "<b>you</b> 指聽話的「我」，轉述時變成 <b>I</b>。空格是從句主語，用主格代詞。" },
+  { direct: '"We found their data," the hackers said.', text: "The hackers said that they had found ___ data.", options: ["they","them","theirs","their"], answer: 3, tag: "轉述句 · 物主形容詞 Possessive Adjective", explain: "<b>their</b> 指他人的數據，轉述時保持 <b>their</b>。後面有名詞 data，用物主形容詞。" },
+  { direct: '"This laptop is mine," he said.', text: "He said that the laptop was ___ .", options: ["his","him","he","my"], answer: 0, tag: "轉述句 · 物主代詞 Possessive Pronoun", explain: "<b>mine</b> 指他的電腦，轉述時變成 <b>his</b>。後面沒有名詞，所以用物主代詞。" },
+  { direct: '"I can see your screen," she told me.', text: "She told me that she could see ___ screen.", options: ["me","my","mine","I"], answer: 1, tag: "轉述句 · 物主形容詞 Possessive Adjective", explain: "<b>your</b> 指「我的」屏幕，轉述時變成 <b>my</b>。後面有名詞 screen，用物主形容詞。" },
+  { direct: '"We need to update our system," they said.', text: "They said that ___ needed to update their system.", options: ["them","their","they","we"], answer: 2, tag: "轉述句 · 主格代詞 Subject Pronoun", explain: "<b>We</b> 指他們自己，轉述時變成 <b>they</b>。空格是從句主語，用主格代詞。" },
+  { direct: '"You should change your password," she told him.', text: "She told him that ___ should change his password.", options: ["him","his","her","he"], answer: 3, tag: "轉述句 · 主格代詞 Subject Pronoun", explain: "<b>you</b> 指聽話的「他」，轉述時變成 <b>he</b>。空格是從句主語，用主格代詞。" },
+  { direct: '"These files are ours," they said.', text: "They said that the files were ___ .", options: ["theirs","them","their","they"], answer: 0, tag: "轉述句 · 物主代詞 Possessive Pronoun", explain: "<b>ours</b> 指他們的檔案，轉述時變成 <b>theirs</b>。後面沒有名詞，用物主代詞。" },
+  { direct: '"I will protect you," the software said.', text: "The software said that it would protect ___ .", options: ["I","me","my","mine"], answer: 1, tag: "轉述句 · 賓格代詞 Object Pronoun", explain: "<b>you</b> 指聽話的「我」，轉述時變成 <b>me</b>。protect 後面接受詞，用賓格代詞。" }
 ];
 
 /* ============================================================
@@ -489,7 +318,7 @@ const QUESTIONS = [
    第 1–10 題：15 秒
    第 11–20 題：18 秒
    第 21–30 題：20 秒
-   第 31–40 題：25 秒
+   第 31–50 題：25 秒
    ============================================================ */
 function getQuestionTimeLimit(index){
   if (index < 10) return 15;
@@ -509,10 +338,12 @@ let timerId = null;
 let timeLeft = 0;
 let currentTimeLimit = 20;
 let answered = false;
+let wrongQuestionsList = []; // 儲存錯題資料
 
 function startGame(){
   current = 0;
   score = 0;
+  wrongQuestionsList = [];
   document.getElementById("startScreen").classList.add("hidden");
   document.getElementById("endScreen").classList.add("hidden");
   document.getElementById("gameScreen").classList.remove("hidden");
@@ -620,7 +451,16 @@ function choose(idx){
         ${q.explain}
       </div>`;
   } else {
+    // 記錄錯題
     const chosenText = idx >= 0 ? q.options[idx] : "（超時，沒有作答）";
+    wrongQuestionsList.push({
+      question: q.text,
+      chosen: chosenText,
+      correct: q.options[q.answer],
+      tag: q.tag,
+      explain: q.explain
+    });
+
     fb.className = "feedback fb-wrong";
     fb.innerHTML = `
       <div class="fb-title">✗ 答錯咗</div>
@@ -649,7 +489,7 @@ function nextQuestion(){
   }
 }
 
-/* ---------- 結束 ---------- */
+/* ---------- 結束與錯題總結 ---------- */
 function showEnd(){
   clearInterval(timerId);
   document.getElementById("gameScreen").classList.add("hidden");
@@ -661,11 +501,35 @@ function showEnd(){
 
   let msg = "";
   if (pct >= 90) msg = "太厲害了！你已經完全掌握四種代詞的分別，連轉述引語都難不到你！🎉";
-  else if (pct >= 75) msg = "很好！再溫習錯題，你就會更加穩。💪<br>記住：主語用主格、動詞後用賓格、名詞前用物主形容詞、無名詞用物主代詞。";
+  else if (pct >= 75) msg = "很好！再溫習下面嘅錯題重點，你就會更加穩。💪";
   else if (pct >= 50) msg = "不錯，但仍要小心！<br>口訣：<b>主格做主語，賓格做受詞，物主形容詞＋名詞，物主代詞單獨用。</b>";
-  else msg = "再努力一次！<br>口訣：<b>主格做主語，賓格做受詞，物主形容詞＋名詞，物主代詞單獨用。</b><br>做轉述句時：I → he/she，my → his/her，you → me/I，we → they。";
+  else msg = "再努力一次！<br>口訣：<b>主格做主語，賓格做受詞，物主形容詞＋名詞，物主代詞單獨用。</b>";
 
   document.getElementById("finalMsg").innerHTML = msg;
+
+  /* 生成錯題總結 (Summary Notes) */
+  const summaryBox = document.getElementById("summaryNotes");
+  const notesList = document.getElementById("notesList");
+
+  if (wrongQuestionsList.length === 0) {
+    summaryBox.classList.add("hidden");
+  } else {
+    summaryBox.classList.remove("hidden");
+    let notesHTML = "";
+    
+    // 反向遍歷，讓最新錯的題目排前面，或者按順序
+    wrongQuestionsList.forEach((item, index) => {
+      notesHTML += `
+        <div class="note-item">
+          <span class="ntag">重點：${item.tag}</span>
+          <div style="margin-bottom:6px;">題目：${item.question.replace('___', '_______')}</div>
+          <div style="margin-bottom:6px; color:#ff9aae;">你答咗：${item.chosen} (正確答案：<b>${item.correct}</b>)</div>
+          <div style="color:#7fc4ff; font-size:0.85rem;">${item.explain}</div>
+        </div>
+      `;
+    });
+    notesList.innerHTML = notesHTML;
+  }
 }
 
 /* ---------- 鍵盤快捷鍵（A/B/C/D 或 1/2/3/4，Enter 下一題） ---------- */
